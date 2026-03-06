@@ -1,0 +1,106 @@
+services:
+  app_client:
+    container_name: app_client
+    restart: unless-stopped
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: http://localhost:8000
+        NEXT_PUBLIC_APP_MODE: client
+    depends_on:
+      - app_backend
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  app_db:
+    image: postgres:16-alpine
+    container_name: app_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - app_pg_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  app_redis:
+    image: redis:7-alpine
+    container_name: app_redis
+    restart: unless-stopped
+
+  app_backend:
+    container_name: app_backend
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app_user:app_password@app_db:5432/app_db
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173
+      JWT_SECRET: change-me
+      REDIS_URL: redis://app_redis:6379/0
+      TRANSLATE_QUEUE_NAME: translations
+    depends_on:
+      - app_db
+      - app_redis
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+
+  app_translation_worker:
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app_user:app_password@app_db:5432/app_db
+      REDIS_URL: redis://app_redis:6379/0
+      TRANSLATE_QUEUE_NAME: translations
+    command: python -m app.modules.translation_queue.worker
+    depends_on:
+      - app_db
+      - app_redis
+    volumes:
+      - ./uploads:/app/uploads
+
+  app_vision_worker:
+    restart: unless-stopped
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env.example
+    environment:
+      DATABASE_URL: postgresql+psycopg2://app_user:app_password@app_db:5432/app_db
+      REDIS_URL: redis://app_redis:6379/0
+    command: rq worker vision
+    depends_on:
+      - app_db
+      - app_redis
+    volumes:
+      - ./uploads:/app/uploads
+
+  app_admin:
+    container_name: app_admin
+    restart: unless-stopped
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: http://localhost:8000
+        NEXT_PUBLIC_APP_MODE: admin
+    depends_on:
+      - app_backend
+    ports:
+      - "127.0.0.1:8080:3000"
+
+volumes:
+  app_pg_data:

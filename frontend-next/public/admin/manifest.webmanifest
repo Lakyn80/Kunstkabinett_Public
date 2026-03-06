@@ -1,0 +1,39 @@
+{
+  "name": "Kunstkabinett Admin",
+  "short_name": "KK Admin",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "lang": "cs",
+  "description": "Admin rozhraní Kunstkabinett – správa obsahu a objednávek.",
+  "icons": [
+    {
+      "src": "/kunstkabinett_favicon_32x32.png?v=20260304-1",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/kunstkabinett_favicon_48x48.png?v=20260304-1",
+      "sizes": "48x48",
+      "type": "image/png"
+    },
+    {
+      "src": "/kunstkabinett_logo_150x150.png?v=20260304-1",
+      "sizes": "150x150",
+      "type": "image/png"
+    },
+    {
+      "src": "/kunstkabinett_logo_300x300.png?v=20260304-1",
+      "sizes": "300x300",
+      "type": "image/png"
+    },
+    {
+      "src": "/kunstkabinett_logo_600x600.png?v=20260304-1",
+      "sizes": "600x600",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

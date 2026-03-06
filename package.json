@@ -1,0 +1,15 @@
+{
+  "name": "arte-moderno-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev:next": "cd frontend-next; npm run dev",
+    "build:next": "cd frontend-next; npm run build",
+    "start:next": "cd frontend-next; npm run start",
+    "dev": "npm run dev:next",
+    "build": "npm run build:next",
+    "start": "npm run start:next",
+    "lint": "cd frontend-next; npm run lint"
+  }
+}

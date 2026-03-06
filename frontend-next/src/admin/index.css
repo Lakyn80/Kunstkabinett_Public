@@ -1,0 +1,201 @@
+/* apps/admin/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------ BASE ------------ */
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans",
+    "Helvetica Neue", Arial, "Liberation Sans", "DejaVu Sans", "Cantarell",
+    "Ubuntu", sans-serif;
+}
+html, body, #root { height: 100%; }
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background-color .5s ease, color .5s ease, background .5s ease;
+}
+
+@layer base {
+  .client-ui {
+    --background: 30 36% 90%;
+    --foreground: 222 47% 11%;
+    --card: 36 42% 96%;
+    --card-foreground: 222 47% 11%;
+    --border: 30 24% 80%;
+    --input: 30 24% 80%;
+    --ring: 265 72% 51%;
+    --primary: 265 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 35 38% 90%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 42 30% 92%;
+    --muted-foreground: 215 16% 34%;
+    --accent: 189 86% 54%;
+    --accent-foreground: 222 47% 11%;
+    --hero-gradient-from: 265 72% 51%;
+    --hero-gradient-to: 189 86% 54%;
+    --bg-grad-start: 36 40% 92%;
+    --bg-grad-end:   30 36% 88%;
+    --glass-bg: 36 42% 96% / .70;
+    --glass-border: 30 24% 80% / .80;
+    --glow-primary: 265 72% 51% / .25;
+    --glow-accent: 189 86% 54% / .25;
+  }
+  .client-ui.dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 265 72% 62%;
+    --primary: 265 72% 62%;
+    --primary-foreground: 222 47% 7%;
+    --secondary: 222 28% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 28% 12%;
+    --muted-foreground: 217 15% 72%;
+    --accent: 189 86% 62%;
+    --accent-foreground: 222 47% 7%;
+    --hero-gradient-from: 265 72% 62%;
+    --hero-gradient-to: 189 86% 62%;
+    --bg-grad-start: 222 47% 8%;
+    --bg-grad-end:   220 47% 6%;
+    --glass-bg: 0 0% 0% / .35;
+    --glass-border: 0 0% 100% / .08;
+    --glow-primary: 265 72% 62% / .45;
+    --glow-accent: 189 86% 62% / .45;
+  }
+  /* ADMIN světlé */
+  .admin-ui {
+    color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 47% 11%;
+    --primary: 222 47% 11%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 40%;
+    --accent: 210 100% 50%;
+    --accent-foreground: 222 47% 11%;
+    --hero-gradient-from: 0 0% 100%;
+    --hero-gradient-to: 0 0% 100%;
+    --glass-bg: 0 0% 100% / 1;
+    --glass-border: 0 0% 100% / 0;
+    --glow-primary: 0 0% 100% / 0;
+    --glow-accent: 0 0% 100% / 0;
+  }
+  * { border-color: hsl(var(--border)); }
+}
+
+/* ------------ COMPONENTS ------------ */
+@layer components {
+  .btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-xl border transition; }
+  .btn-primary { @apply bg-primary text-primary-foreground border-transparent hover:opacity-90; }
+  .btn-secondary { @apply bg-secondary text-secondary-foreground border-transparent hover:opacity-90; }
+  .btn-ghost { @apply border bg-transparent hover:bg-muted; }
+
+  .input { @apply w-full rounded-xl border px-3 py-2 outline-none focus:ring-2; }
+
+  .card {
+    @apply rounded-2xl border bg-card text-[color:var(--card-foreground)] shadow-sm;
+    color: hsl(var(--card-foreground));
+  }
+
+  .art-frame { position: relative; overflow: hidden; border-radius: 1rem; border: 1px solid hsl(var(--border)); background: #fff; box-shadow: 0 10px 30px hsl(var(--glow-primary)); isolation: isolate; }
+  .art-frame::before {
+    content:""; position:absolute; inset:0; border-radius: inherit; pointer-events:none;
+    background: linear-gradient(180deg, rgba(0,0,0,.06), transparent 60%);
+    -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 70%, transparent 100%);
+            mask-image: radial-gradient(120% 90% at 50% 0%, #000 70%, transparent 100%);
+  }
+  .art-aspect { aspect-ratio: 4 / 3; }
+  .art-media { @apply absolute inset-0 grid place-items-center p-2; }
+  .art-media > img { @apply h-full w-full object-contain object-center; }
+
+  .font-logo { font-family: "Cinzel Decorative","Cinzel",serif; font-feature-settings: "liga","kern"; letter-spacing:.02rem; }
+  .logo-wordmark {
+    @apply font-logo select-none;
+    display:inline-block; line-height:1;
+    background: linear-gradient(135deg, #6d28d9 0%, #22d3ee 60%, #111827 130%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow: 0 1px 0 rgba(0,0,0,.05);
+    filter: drop-shadow(0 2px 6px rgba(109,40,217,.25));
+  }
+  .logo-wordmark:hover { filter: drop-shadow(0 3px 10px rgba(34,211,238,.35)); }
+  .logo-wordmark .suffix {
+    background: linear-gradient(135deg, #0f172a 0%, #000 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+}
+
+/* ------------ UTILITIES / EFFECTS ------------ */
+@layer utilities {
+  .glass { background: hsl(var(--glass-bg)); backdrop-filter: blur(12px); border: 1px solid hsl(var(--glass-border)); }
+  .gradient-hero { background: linear-gradient(135deg, hsl(var(--hero-gradient-from)), hsl(var(--hero-gradient-to))); }
+  .hover-lift { transition: transform .25s ease, box-shadow .25s ease; }
+  .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 20px 40px hsl(var(--glow-accent)); }
+  .page-bg {
+    background:
+      radial-gradient(1200px 700px at 10% -10%, hsl(var(--primary) / .06), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, hsl(var(--accent) / .06), transparent 60%),
+      linear-gradient(180deg, hsl(var(--bg-grad-start)) 0%, hsl(var(--bg-grad-end)) 100%);
+  }
+  .page-noise {
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.012) 0 1px, transparent 1px 3px);
+    background-blend-mode: soft-light;
+  }
+  .client-ui.dark .page-bg {
+    background:
+      radial-gradient(1000px 600px at 0% -10%, rgba(148,163,184,.08), transparent 60%),
+      radial-gradient(1200px 700px at 100% 0%, rgba(34,211,238,.06), transparent 60%),
+      linear-gradient(180deg, hsl(var(--bg-grad-start)) 0%, hsl(var(--bg-grad-end)) 100%);
+  }
+  .client-ui.dark .page-noise {
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 3px);
+    background-blend-mode: soft-light;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bg-fade-anim { animation: bgFloat 18s ease-in-out infinite alternate; }
+    @keyframes bgFloat { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 4% 2%, -2% 3%, 0 0; } }
+  }
+  .glass-card { background: hsl(var(--glass-bg)); backdrop-filter: blur(10px); border: 1px solid hsl(var(--glass-border)); border-radius: 1rem; }
+  .glass-hero {
+    background:
+      linear-gradient(135deg, hsl(var(--hero-gradient-from) / .06), hsl(var(--hero-gradient-to) / .06)),
+      hsl(var(--glass-bg));
+    backdrop-filter: blur(14px);
+    border: 1px solid hsl(var(--glass-border));
+  }
+  .card--halo {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, hsl(36 42% 96% / .92), hsl(30 36% 90% / .92)) padding-box,
+      linear-gradient(135deg, hsl(var(--primary) / .28), hsl(var(--accent) / .28)) border-box;
+  }
+  .card--glass {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px hsl(var(--glow-primary)),
+                0 1px 0 hsl(0 0% 100% / .6) inset,
+                0 -1px 0 hsl(0 0% 0% / .03) inset;
+  }
+  .client-ui .card--tint {
+    background-image:
+      radial-gradient(120% 80% at 0% 0%, hsl(var(--accent) / .05), transparent 60%),
+      radial-gradient(120% 80% at 100% 0%, hsl(var(--primary) / .05), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 3px);
+    background-blend-mode: soft-light, soft-light, normal;
+  }
+}
