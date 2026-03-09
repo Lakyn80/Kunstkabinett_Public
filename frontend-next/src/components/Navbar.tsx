@@ -26,8 +26,14 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { t, lang, setLang } = useI18n();
   const { totals } = useCart() as { totals?: { count?: number } };
-  const { user, logout } = useAuth() as { user?: unknown; logout: () => Promise<void> };
-  const isLoggedIn = !!user || (typeof window !== "undefined" && !!localStorage.getItem("am_client_token"));
+  const { user, logout, loading } = useAuth() as {
+    user?: unknown;
+    logout: () => Promise<void>;
+    loading?: boolean;
+  };
+  const hasStoredClientToken =
+    typeof window !== "undefined" && !!localStorage.getItem("am_client_token");
+  const isLoggedIn = !!user || (!!loading && hasStoredClientToken);
   const cartCount = totals?.count || 0;
   const signedInLabel = pickByLang(lang, {
     cs: "Přihlášen",

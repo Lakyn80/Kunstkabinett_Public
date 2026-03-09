@@ -4,6 +4,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useI18n } from '../../i18n/I18nProvider'
 
+function consumeAfterAuthRedirect() {
+  try {
+    const target = sessionStorage.getItem('after_login_redirect')
+    if (target) {
+      sessionStorage.removeItem('after_login_redirect')
+      return target
+    }
+  } catch {}
+  return '/account'
+}
+
 export default function ClientLogin() {
   const { t } = useI18n()
   const { login /*, loading*/ } = useAuth()
@@ -23,7 +34,7 @@ export default function ClientLogin() {
       const password = passwordRef.current?.value || ''
       await login(email, password)
       if (formRef.current) formRef.current.reset()
-      nav('/account', { replace: true })
+      nav(consumeAfterAuthRedirect(), { replace: true })
     } catch {
       setErr(t('login.error'))
     } finally {

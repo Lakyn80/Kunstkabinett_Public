@@ -1,5 +1,5 @@
 // apps/client/src/modules/auth/AuthContext.jsx
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import api from '../common/apiClient'; // pouzivame /auth/* a /api/*
 
 const AdminCtx = createContext(null);
@@ -38,15 +38,15 @@ export function AuthProvider({ children }) {
   const idleTimerRef = useRef(null);
   const lastActivityRef = useRef(Date.now());
 
-  const setAuthHeader = (token) => {
+  const setAuthHeader = useCallback((token) => {
     if (token) {
       api.defaults.headers.common.Authorization = `Bearer ${token}`;
     } else {
       delete api.defaults.headers.common.Authorization;
     }
-  };
+  }, []);
 
-  const fetchMe = async () => {
+  const fetchMe = useCallback(async () => {
     try {
       const { data } = await api.get('/api/v1/auth/me');
       const norm = data
@@ -64,7 +64,22 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const authenticateWithToken = useCallback(async (token) => {
+    if (!token) throw new Error('Missing access token');
+    setLoading(true);
+    setStoredToken(token);
+    setAuthHeader(token);
+
+    const me = await fetchMe();
+    if (!me) {
+      clearStoredToken();
+      setAuthHeader(null);
+      throw new Error('Profil se nepodarilo nacist');
+    }
+    return me;
+  }, [fetchMe, setAuthHeader]);
 
   useEffect(() => {
     const t = getStoredToken();
@@ -74,10 +89,9 @@ export function AuthProvider({ children }) {
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchMe, setAuthHeader]);
 
-  const logoutFn = async () => {
+  const logoutFn = useCallback(async () => {
     try {
       await api.post('/api/v1/auth/logout');
     } catch {
@@ -86,19 +100,14 @@ export function AuthProvider({ children }) {
     clearStoredToken();
     setAuthHeader(null);
     setUser(null);
-  };
+  }, [setAuthHeader]);
 
-  const loginFn = async (email, password) => {
+  const loginFn = useCallback(async (email, password) => {
     const { data } = await api.post('/api/v1/auth/login', { email, password });
     const token = data?.access_token;
     if (!token) throw new Error('Login bez access_token');
-
-    setStoredToken(token);
-    setAuthHeader(token);
-
-    const me = await fetchMe();
-    if (!me) throw new Error('Profil se nepodarilo nacist');
-  };
+    await authenticateWithToken(token);
+  }, [authenticateWithToken]);
 
   // Auto logout po 10 minutach neaktivity
   useEffect(() => {
@@ -124,7 +133,7 @@ export function AuthProvider({ children }) {
       events.forEach((ev) => window.removeEventListener(ev, reset));
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-  }, [user]);
+  }, [user, logoutFn]);
 
   const value = useMemo(
     () => ({
@@ -133,8 +142,9 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!user,
       login: loginFn,
       logout: logoutFn,
+      authenticateWithToken,
     }),
-    [user, loading]
+    [user, loading, loginFn, logoutFn, authenticateWithToken]
   );
 
   return <AdminCtx.Provider value={value}>{children}</AdminCtx.Provider>;

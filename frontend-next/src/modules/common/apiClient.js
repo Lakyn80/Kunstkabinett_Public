@@ -20,31 +20,6 @@ function ensureSessionId() {
   }
 }
 
-// Remap old client order paths to FE proxy /orders (GET only)
-function remapOrderClientPath(url, method) {
-  const m = (method || "").toLowerCase();
-  if (m && m !== "get") return url;
-  if (!url) return url;
-  const u = String(url);
-  // Do NOT remap special subpaths (bank info/qr, payments) – these live only under /api/client/v1/...
-  if (u.includes("/bank") || u.includes("/pay-intent") || u.includes("/payments")) {
-    return url;
-  }
-  if (u === "/api/client/v1/orders") return "/orders";
-  if (u.startsWith("/api/client/v1/orders/")) {
-    return u.replace(/^\/api\/client\/v1\/orders\//, "/orders/");
-  }
-  return url;
-}
-
-function remapIfNeeded(u, method) {
-  try {
-    return remapOrderClientPath(u, method);
-  } catch {
-    return u;
-  }
-}
-
 // Compute baseURL: prefer VITE_API_BASE, otherwise origin; for local Docker (8080/8083) point to backend 8050
 function computeBaseURL() {
   const envBase = process.env.NEXT_PUBLIC_API_BASE;
@@ -68,8 +43,6 @@ const api = axios.create({
 
 // Request
 api.interceptors.request.use((config) => {
-  config.url = remapIfNeeded(config.url, config.method);
-
   const tok = localStorage.getItem("am_client_token");
   config.headers = config.headers || {};
   if (tok) config.headers.Authorization = `Bearer ${tok}`;

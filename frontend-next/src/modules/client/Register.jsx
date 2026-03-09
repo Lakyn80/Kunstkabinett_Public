@@ -2,10 +2,23 @@ import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../common/apiClient'
 import { useI18n } from '../../i18n/I18nProvider'
+import { useAuth } from '../auth/AuthContext'
+
+function consumeAfterAuthRedirect() {
+  try {
+    const target = sessionStorage.getItem('after_login_redirect')
+    if (target) {
+      sessionStorage.removeItem('after_login_redirect')
+      return target
+    }
+  } catch {}
+  return '/account'
+}
 
 export default function ClientRegister() {
   const { t } = useI18n()
   const nav = useNavigate()
+  const { authenticateWithToken } = useAuth()
 
   const formRef = useRef(null)
   const nameRef = useRef(null)
@@ -53,23 +66,9 @@ export default function ClientRegister() {
         try {
           const { data } = await api.post(path, payload)
           const token = data?.access_token || data?.token || null
-          if (token) {
-            // Nastav token do localStorage a API header
-            // Použij pouze client token (izolovaný od admin tokenu)
-            localStorage.setItem('am_client_token', token)
-            api.defaults.headers.common.Authorization = `Bearer ${token}`
-            // Načti profil uživatele pomocí tokenu (ne login, protože už máme token)
-            try {
-              const meRes = await api.get('/api/v1/auth/me')
-              // Pokud se podařilo načíst profil, můžeme pokračovat
-              if (meRes?.data) {
-                // Profil načten, AuthContext se aktualizuje automaticky při reloadu
-              }
-            } catch (meErr) {
-              // Ignoruj chybu, uživatel bude přesměrován a AuthContext se aktualizuje
-            }
-          }
-          nav('/account', { replace: true })
+          if (!token) throw new Error(t('register.error'))
+          await authenticateWithToken(token)
+          nav(consumeAfterAuthRedirect(), { replace: true })
           ok = true
           if (formRef.current) formRef.current.reset()
           break

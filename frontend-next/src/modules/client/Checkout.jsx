@@ -114,7 +114,7 @@ export default function Checkout() {
   const { t, lang } = useI18n();
   const nav = useNavigate();
   const { items, clear, remove } = useCart();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -279,7 +279,7 @@ export default function Checkout() {
   const discount = useMemo(() => (coupon?.valid ? Number(coupon.discount) : 0), [coupon]);
   const totalAfter = useMemo(() => Math.max(0, Number(totalSum) - Number(discount)), [totalSum, discount]);
 
-  const canPlaceOrder = rows.length > 0 && !!user && !currencyMixError;
+  const canPlaceOrder = rows.length > 0 && !authLoading && !!user && !currencyMixError;
 
   async function handleValidateCoupon() {
     if (!couponCode) return;
@@ -406,13 +406,11 @@ export default function Checkout() {
     };
     
     const variants = [
-      // Prefer trailing slash, aby FastAPI nedělalo 307 redirect (mixer scheme)
+      // Prefer trailing slash, aby FastAPI nedělalo 307 redirect.
       { url: "/api/client/v1/orders/", body: basePayload },
       { url: "/api/client/v1/orders", body: basePayload },
       { url: "/api/client/v1/orders/", body: { ...basePayload, items: itemsBasic.map(i => ({ product_id: i.product_id, quantity: i.qty })) } },
       { url: "/api/client/v1/orders", body: { ...basePayload, items: itemsBasic.map(i => ({ product_id: i.product_id, quantity: i.qty })) } },
-      { url: "/orders/", body: basePayload },
-      { url: "/orders", body: basePayload },
       { url: "/api/client/v1/orders/", body: { ...basePayload, cart_items: itemsBasic } },
       { url: "/api/client/v1/orders", body: { ...basePayload, cart_items: itemsBasic } },
     ];
@@ -465,7 +463,7 @@ export default function Checkout() {
       <div className="md:col-span-2 rounded-xl border bg-white text-black p-6 shadow-sm dark:bg-slate-900 dark:text-white dark:border-slate-800">
         <h1 className="text-xl font-semibold mb-4">{t('checkout.title')}</h1>
 
-        {!user && (
+        {!authLoading && !user && (
           <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
             {t('checkout.loginRequired')}{" "}
             <Link to="/login" className="underline hover:opacity-80">
@@ -762,12 +760,12 @@ export default function Checkout() {
             className="rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 dark:bg-white dark:text-black"
             disabled={!canPlaceOrder || submitting || !!currencyMixError}
             onClick={placeOrder}
-            title={!user ? t('checkout.loginToComplete') : undefined}
+            title={!authLoading && !user ? t('checkout.loginToComplete') : undefined}
           >
             {submitting ? t('checkout.submitting') : t('orderDetail.payment')}
           </button>
 
-          {!user && (
+          {!authLoading && !user && (
             <Link
               to="/login"
               className="rounded-xl border border-slate-300 px-4 py-2 text-sm text-center hover:bg-white/70 dark:border-slate-700 dark:hover:bg-slate-800"
